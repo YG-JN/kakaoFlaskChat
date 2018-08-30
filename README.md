@@ -41,3 +41,15 @@ def keyboard():
     return json_keyboard
 
 app.run(host=os.getenv('IP', '0.0.0.0'),port=int(os.getenv('PORT', 8080)))
+```
+
+###API
+
+-request
+    -url :  어떤 경로로 보낼꺼니?
+    -hethod : 어떤 방법으로 보낼거니?
+    -parameter : 어떤 정보를 담을거니?
+
+-response
+    -data type : 어떤 형식으로 답할까?
+    -
