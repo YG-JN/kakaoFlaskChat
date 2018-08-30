@@ -3,7 +3,7 @@ import json
 from flask import Flask, request, jsonify
 import requests
 import random
- 
+from bs4 import BeautifulSoup
 
 
 app = Flask(__name__)
@@ -41,13 +41,38 @@ def message():
         #6개 샘플링
         pick = random.sample(numbers,6)
         # 정렬 후 스트링으로 변환하여 출력
-        return_msg = str(sorted(pick)) + "만큼 진꼬 당첨!"
+        return_msg = str(sorted(pick)) + "로 로또사면 진꼬 당첨!"
     elif msg =="강아지":
         img_bool = True
         url = "https://api.thedogapi.com/v1/images/search?mime_types=jpg"
         req = requests.get(url).json()
-        dog_url=req[0]['url']
+        return_msg = "나만 강쥐가 없어 :("
+        img_url=req[0]['url']
+    elif msg == "영화":
+        img_bool = True
+        url = "https://movie.naver.com/movie/running/current.nhn"
+        req = requests.get(url).text
         
+        doc = BeautifulSoup(req, 'html.parser')
+        
+        title_tag = doc.select('dt.tit > a')
+        star_tag = doc.select('div.star_t1 > a > span.num')
+        reserve_tag = doc.select('#content > div.article > div > div.lst_wrap > ul > li > dl > dd.star > dl.info_exp > dd > div > span.num')
+        img_tag = doc.select('div.thumb > a > img')
+        
+        movie_dic = {}
+        for i in range(0,10):
+            movie_dic[i] = {
+                "title" : title_tag[i].text,
+                "star" : star_tag[i].text,
+                "reserve" : reserve_tag[i].text,
+                "img" : img_tag[i].get('src')
+            }
+            
+        pick_movie = movie_dic[random.randrange(0,10)]
+        
+        return_msg = "%s/평점:%s/예매율:%s" % (pick_movie['title'],pick_movie['star'],pick_movie['reserve'])
+        img_url = pick_movie['img']
     else:
         return_msg = "현재메뉴만 지원합니다."
         
@@ -57,9 +82,9 @@ def message():
     if img_bool == True:
         json_return = {
             "message" : {
-                "text" : "나만 강아지 없어 :(",
+                "text" : return_msg,
                 "photo" : {
-                    "url" : dog_url,
+                    "url" : img_url,
                     "width" :720,
                     "height" : 640
                 }
